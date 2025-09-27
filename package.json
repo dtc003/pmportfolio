@@ -1,0 +1,13 @@
+{
+  "name": "dallin-portfolio",
+  "version": "1.0.0",
+  "description": "Dallin Christensen's Product Management Portfolio",
+  "main": "index.html",
+  "scripts": {
+    "dev": "serve .",
+    "build": "echo 'Static site - no build needed'",
+    "start": "serve ."
+  },
+  "keywords": ["portfolio", "product-management"],
+  "author": "Dallin Christensen"
+}
