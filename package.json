@@ -4,9 +4,9 @@
   "description": "Dallin Christensen's Product Management Portfolio",
   "main": "index.html",
   "scripts": {
-    "dev": "serve .",
+    "dev": "serve public",
     "build": "echo 'Static site - no build needed'",
-    "start": "serve ."
+    "start": "serve public"
   },
   "keywords": ["portfolio", "product-management"],
   "author": "Dallin Christensen"
