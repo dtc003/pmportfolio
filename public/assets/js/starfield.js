@@ -6,14 +6,30 @@
   var ctx = canvas.getContext('2d');
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasHero = !!document.querySelector('.hero');
+  var scrollY = window.scrollY || 0;
 
   var width, height, dpr;
   var stars = [];
-  var planets = [];
   var shootingStars = [];
   var mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
   var lastShotAt = 0;
   var nextShotDelay = randomBetween(2500, 6000);
+
+  var earth = {
+    x: 0, y: 0, r: 0, depth: 0.12,
+    sphereCanvas: null,
+    sphereSize: 0,
+    centerLon: -35,
+    lastRenderLon: null
+  };
+  var earthImg = new Image();
+  var earthReady = false;
+  earthImg.onload = function () {
+    earthReady = true;
+    renderEarthSphere(true);
+  };
+  earthImg.src = '/assets/img/earth.jpg';
 
   function randomBetween(min, max) {
     return Math.random() * (max - min) + min;
@@ -29,7 +45,7 @@
     canvas.style.height = height + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     buildStars();
-    buildPlanets();
+    buildEarth();
   }
 
   function buildStars() {
@@ -50,36 +66,76 @@
     }
   }
 
-  function buildPlanets() {
-    planets = [
-      {
-        x: width * 0.86,
-        y: height * 0.18,
-        r: Math.max(38, Math.min(width, height) * 0.06),
-        depth: 0.15,
-        colors: ['#ffb27a', '#7a3d2b'],
-        ring: false,
-        driftPhase: 0
-      },
-      {
-        x: width * 0.1,
-        y: height * 0.78,
-        r: Math.max(26, Math.min(width, height) * 0.045),
-        depth: 0.3,
-        colors: ['#a9c4ff', '#2a3970'],
-        ring: true,
-        driftPhase: 2
-      },
-      {
-        x: width * 0.5,
-        y: height * 0.08,
-        r: Math.max(10, Math.min(width, height) * 0.015),
-        depth: 0.4,
-        colors: ['#e8e8f0', '#8a8aa0'],
-        ring: false,
-        driftPhase: 4
+  function buildEarth() {
+    var diameter = Math.min(width * 0.5, height * 0.62);
+    diameter = Math.max(220, Math.min(diameter, 460));
+    earth.r = diameter / 2;
+    earth.x = width - earth.r * 0.35;
+    earth.y = earth.r * 0.75;
+    var sphereSize = Math.round(diameter * dpr);
+    if (sphereSize !== earth.sphereSize) {
+      earth.sphereSize = sphereSize;
+      earth.sphereCanvas = document.createElement('canvas');
+      earth.sphereCanvas.width = sphereSize;
+      earth.sphereCanvas.height = sphereSize;
+      if (earthReady) renderEarthSphere(true);
+    }
+  }
+
+  // Projects the equirectangular NASA Blue Marble texture onto a circle using
+  // arcsine column spacing so longitude lines compress toward the limb, the
+  // way they actually foreshorten on a sphere viewed from outside.
+  function renderEarthSphere(force) {
+    if (!earthReady || !earth.sphereCanvas) return;
+    if (!force && earth.lastRenderLon === earth.centerLon) return;
+    earth.lastRenderLon = earth.centerLon;
+
+    var size = earth.sphereSize;
+    var R = size / 2;
+    var sctx = earth.sphereCanvas.getContext('2d');
+    sctx.clearRect(0, 0, size, size);
+    sctx.save();
+    sctx.beginPath();
+    sctx.arc(R, R, R, 0, Math.PI * 2);
+    sctx.clip();
+
+    var srcW = earthImg.naturalWidth || earthImg.width;
+    var srcH = earthImg.naturalHeight || earthImg.height;
+    var sliceW = Math.max(1, Math.ceil(size / 220));
+
+    for (var px = 0; px < size; px += 1) {
+      var u = (px - R) / R;
+      if (u < -1) u = -1;
+      if (u > 1) u = 1;
+      var angleDeg = Math.asin(u) * (180 / Math.PI);
+      var lonDeg = earth.centerLon + angleDeg;
+      var frac = ((lonDeg + 180) % 360 + 360) % 360 / 360;
+      var srcX = frac * srcW;
+      var sx = srcX - sliceW / 2;
+      if (sx < 0) sx += srcW;
+      if (sx + sliceW > srcW) {
+        sctx.drawImage(earthImg, sx, 0, srcW - sx, srcH, px, 0, 1, size);
+      } else {
+        sctx.drawImage(earthImg, sx, 0, sliceW, srcH, px, 0, 1, size);
       }
-    ];
+    }
+
+    // Day/night terminator — light source from upper-left, matching the rim glow.
+    var termGrad = sctx.createLinearGradient(size * 0.08, size * 0.05, size * 0.92, size * 0.95);
+    termGrad.addColorStop(0, 'rgba(255,255,255,0)');
+    termGrad.addColorStop(0.55, 'rgba(4,6,14,0.12)');
+    termGrad.addColorStop(1, 'rgba(2,3,8,0.72)');
+    sctx.fillStyle = termGrad;
+    sctx.fillRect(0, 0, size, size);
+
+    // Subtle spherical vignette so the limb reads as curved, not a flat disc.
+    var vign = sctx.createRadialGradient(R, R, R * 0.55, R, R, R);
+    vign.addColorStop(0, 'rgba(0,0,0,0)');
+    vign.addColorStop(1, 'rgba(0,0,0,0.35)');
+    sctx.fillStyle = vign;
+    sctx.fillRect(0, 0, size, size);
+
+    sctx.restore();
   }
 
   function spawnShootingStar(originX, originY) {
@@ -112,43 +168,42 @@
     }
   }
 
-  function drawPlanets(time) {
-    for (var i = 0; i < planets.length; i++) {
-      var p = planets[i];
-      var drift = reduceMotion ? 0 : Math.sin(time * 0.00012 + p.driftPhase) * 10;
-      var offsetX = (reduceMotion ? 0 : mouse.x * p.depth * 26) + drift;
-      var offsetY = (reduceMotion ? 0 : mouse.y * p.depth * 26) + drift * 0.4;
-      var px = p.x + offsetX;
-      var py = p.y + offsetY;
+  function drawEarth(time) {
+    if (!hasHero || !earthReady) return;
+    var offsetX = reduceMotion ? 0 : mouse.x * earth.depth * 22;
+    var offsetY = reduceMotion ? 0 : mouse.y * earth.depth * 22;
+    var ex = earth.x + offsetX;
+    var ey = earth.y + offsetY - scrollY * 0.6;
 
-      if (p.ring) {
-        ctx.save();
-        ctx.translate(px, py);
-        ctx.rotate(-0.35);
-        ctx.beginPath();
-        ctx.ellipse(0, 0, p.r * 1.9, p.r * 0.55, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(200,210,255,0.35)';
-        ctx.lineWidth = Math.max(2, p.r * 0.08);
-        ctx.stroke();
-        ctx.restore();
-      }
+    if (ey + earth.r * 1.2 < 0 || ey - earth.r * 1.2 > height) return;
 
-      var grad = ctx.createRadialGradient(px - p.r * 0.3, py - p.r * 0.3, p.r * 0.1, px, py, p.r);
-      grad.addColorStop(0, p.colors[0]);
-      grad.addColorStop(1, p.colors[1]);
-      ctx.beginPath();
-      ctx.arc(px, py, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = grad;
-      ctx.fill();
+    // Outer atmosphere glow.
+    var glow = ctx.createRadialGradient(ex, ey, earth.r * 0.98, ex, ey, earth.r * 1.18);
+    glow.addColorStop(0, 'rgba(150,190,255,0.22)');
+    glow.addColorStop(1, 'rgba(150,190,255,0)');
+    ctx.beginPath();
+    ctx.arc(ex, ey, earth.r * 1.18, 0, Math.PI * 2);
+    ctx.fillStyle = glow;
+    ctx.fill();
 
-      var glow = ctx.createRadialGradient(px, py, p.r, px, py, p.r * 2.2);
-      glow.addColorStop(0, 'rgba(255,255,255,0.08)');
-      glow.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.beginPath();
-      ctx.arc(px, py, p.r * 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = glow;
-      ctx.fill();
+    if (earth.sphereCanvas) {
+      ctx.drawImage(earth.sphereCanvas, ex - earth.r, ey - earth.r, earth.r * 2, earth.r * 2);
     }
+
+    // Rim light along the lit (upper-left) edge.
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(ex, ey, earth.r, 0, Math.PI * 2);
+    ctx.clip();
+    var rim = ctx.createRadialGradient(
+      ex - earth.r * 0.55, ey - earth.r * 0.55, earth.r * 0.1,
+      ex - earth.r * 0.55, ey - earth.r * 0.55, earth.r * 1.5
+    );
+    rim.addColorStop(0, 'rgba(255,255,255,0.16)');
+    rim.addColorStop(0.4, 'rgba(255,255,255,0)');
+    ctx.fillStyle = rim;
+    ctx.fillRect(ex - earth.r, ey - earth.r, earth.r * 2, earth.r * 2);
+    ctx.restore();
   }
 
   function drawShootingStars() {
@@ -178,16 +233,25 @@
     }
   }
 
+  var lastRotationTick = 0;
+
   function frame(time) {
     ctx.clearRect(0, 0, width, height);
-    drawPlanets(time);
+    drawEarth(time);
     drawStars(time);
     drawShootingStars();
 
-    if (!reduceMotion && time - lastShotAt > nextShotDelay) {
-      spawnShootingStar();
-      lastShotAt = time;
-      nextShotDelay = randomBetween(3500, 8000);
+    if (!reduceMotion) {
+      if (time - lastRotationTick > 1800) {
+        earth.centerLon = (earth.centerLon + 2.2) % 360;
+        renderEarthSphere(false);
+        lastRotationTick = time;
+      }
+      if (time - lastShotAt > nextShotDelay) {
+        spawnShootingStar();
+        lastShotAt = time;
+        nextShotDelay = randomBetween(3500, 8000);
+      }
     }
 
     requestAnimationFrame(frame);
@@ -205,6 +269,9 @@
   }
 
   window.addEventListener('resize', resize);
+  window.addEventListener('scroll', function () {
+    scrollY = window.scrollY || 0;
+  }, { passive: true });
   window.addEventListener('mousemove', function (e) {
     onPointerMove(e.clientX, e.clientY);
   });
