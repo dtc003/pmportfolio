@@ -49,16 +49,16 @@
   }
 
   function buildStars() {
-    var count = Math.round((width * height) / 2600);
-    count = Math.max(90, Math.min(count, 320));
+    var count = Math.round((width * height) / 4500);
+    count = Math.max(60, Math.min(count, 190));
     stars = [];
     for (var i = 0; i < count; i++) {
       var layer = Math.random();
       stars.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        r: layer < 0.6 ? randomBetween(0.5, 1.2) : layer < 0.9 ? randomBetween(1.2, 1.9) : randomBetween(1.9, 2.6),
-        baseAlpha: randomBetween(0.35, 1),
+        r: layer < 0.6 ? randomBetween(0.35, 0.8) : layer < 0.9 ? randomBetween(0.8, 1.2) : randomBetween(1.2, 1.7),
+        baseAlpha: randomBetween(0.3, 0.9),
         twinkleSpeed: randomBetween(0.4, 1.6),
         phase: Math.random() * Math.PI * 2,
         depth: layer < 0.6 ? 0.25 : layer < 0.9 ? 0.5 : 0.85
@@ -67,11 +67,19 @@
   }
 
   function buildEarth() {
-    var diameter = Math.min(width * 0.5, height * 0.62);
-    diameter = Math.max(220, Math.min(diameter, 460));
+    var isNarrow = width < 640;
+    var diameter = isNarrow
+      ? Math.min(width * 0.7, height * 0.4)
+      : Math.min(width * 0.36, height * 0.58);
+    diameter = Math.max(180, Math.min(diameter, 420));
     earth.r = diameter / 2;
-    earth.x = width - earth.r * 0.35;
-    earth.y = earth.r * 0.75;
+    if (isNarrow) {
+      earth.x = width - earth.r * 0.55;
+      earth.y = height - earth.r * 0.85;
+    } else {
+      earth.x = width - earth.r - Math.max(40, width * 0.06);
+      earth.y = 72 + (height - 72) / 2;
+    }
     var sphereSize = Math.round(diameter * dpr);
     if (sphereSize !== earth.sphereSize) {
       earth.sphereSize = sphereSize;
@@ -101,9 +109,10 @@
 
     var srcW = earthImg.naturalWidth || earthImg.width;
     var srcH = earthImg.naturalHeight || earthImg.height;
-    var sliceW = Math.max(1, Math.ceil(size / 220));
+    var step = size > 500 ? 2 : 1;
+    var sliceW = Math.max(1, Math.ceil((size / 220) * step));
 
-    for (var px = 0; px < size; px += 1) {
+    for (var px = 0; px < size; px += step) {
       var u = (px - R) / R;
       if (u < -1) u = -1;
       if (u > 1) u = 1;
@@ -114,9 +123,9 @@
       var sx = srcX - sliceW / 2;
       if (sx < 0) sx += srcW;
       if (sx + sliceW > srcW) {
-        sctx.drawImage(earthImg, sx, 0, srcW - sx, srcH, px, 0, 1, size);
+        sctx.drawImage(earthImg, sx, 0, srcW - sx, srcH, px, 0, step, size);
       } else {
-        sctx.drawImage(earthImg, sx, 0, sliceW, srcH, px, 0, 1, size);
+        sctx.drawImage(earthImg, sx, 0, sliceW, srcH, px, 0, step, size);
       }
     }
 
@@ -242,8 +251,8 @@
     drawShootingStars();
 
     if (!reduceMotion) {
-      if (time - lastRotationTick > 1800) {
-        earth.centerLon = (earth.centerLon + 2.2) % 360;
+      if (time - lastRotationTick > 45) {
+        earth.centerLon = (earth.centerLon + 0.18) % 360;
         renderEarthSphere(false);
         lastRotationTick = time;
       }

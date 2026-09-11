@@ -275,20 +275,17 @@ img {
   min-height: calc(100vh - 72px);
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
+  justify-content: flex-start;
+  text-align: left;
   padding: 80px 0 60px;
 }
 
-.hero-eyebrow {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  margin-bottom: 22px;
+.hero .container {
+  display: flex;
+}
+
+.hero-content {
+  max-width: 560px;
 }
 
 .hero h1 {
@@ -305,43 +302,15 @@ img {
   margin-top: 22px;
   font-size: clamp(1.05rem, 2vw, 1.3rem);
   color: var(--text-dim);
-  max-width: 620px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 480px;
 }
 
 .hero-actions {
   margin-top: 40px;
   display: flex;
   gap: 16px;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
-}
-
-.hero-socials {
-  margin-top: 56px;
-  display: flex;
-  gap: 22px;
-  justify-content: center;
-}
-
-.hero-socials a {
-  width: 46px;
-  height: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--panel);
-  color: var(--text-dim);
-  transition: background 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out;
-}
-
-.hero-socials a:hover {
-  color: var(--bg);
-  background: var(--text);
-  border-color: var(--text);
 }
 
 .scroll-hint {
