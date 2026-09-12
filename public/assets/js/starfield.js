@@ -383,8 +383,8 @@
 
   function frame(time) {
     ctx.clearRect(0, 0, width, height);
-    drawEarth(time);
     drawStars(time);
+    drawEarth(time);
     drawShootingStars();
 
     if (!reduceMotion) {
