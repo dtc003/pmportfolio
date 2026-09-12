@@ -1,1 +1,3 @@
-NASA Blue Marble (land_shallow_topo) — public domain, https://visibleearth.nasa.gov/
+earth.jpg: NASA Blue Marble (land_shallow_topo) — public domain, https://visibleearth.nasa.gov/
+earth-clouds.jpg: NASA Blue Marble Next Generation cloud fraction composite — public domain, https://visibleearth.nasa.gov/
+earth-night.jpg: NASA Black Marble / Earth at Night 2012 (Suomi NPP VIIRS) — public domain, https://earthobservatory.nasa.gov/features/NightLights

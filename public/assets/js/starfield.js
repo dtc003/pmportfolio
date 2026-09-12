@@ -31,6 +31,22 @@
   };
   earthImg.src = '/assets/img/earth.jpg';
 
+  var nightImg = new Image();
+  var nightReady = false;
+  nightImg.onload = function () {
+    nightReady = true;
+    renderEarthSphere(true);
+  };
+  nightImg.src = '/assets/img/earth-night.jpg';
+
+  var cloudsImg = new Image();
+  var cloudsReady = false;
+  cloudsImg.onload = function () {
+    cloudsReady = true;
+    renderEarthSphere(true);
+  };
+  cloudsImg.src = '/assets/img/earth-clouds.jpg';
+
   function randomBetween(min, max) {
     return Math.random() * (max - min) + min;
   }
@@ -70,14 +86,14 @@
     var isNarrow = width < 640;
     var diameter = isNarrow
       ? Math.min(width * 0.7, height * 0.4)
-      : Math.min(width * 0.36, height * 0.58);
-    diameter = Math.max(180, Math.min(diameter, 420));
+      : Math.min(width * 0.3, height * 0.55);
+    diameter = Math.max(180, Math.min(diameter, 400));
     earth.r = diameter / 2;
     if (isNarrow) {
       earth.x = width - earth.r * 0.55;
       earth.y = height - earth.r * 0.85;
     } else {
-      earth.x = width - earth.r - Math.max(40, width * 0.06);
+      earth.x = width - earth.r - Math.max(70, width * 0.09);
       earth.y = 72 + (height - 72) / 2;
     }
     var sphereSize = Math.round(diameter * dpr);
@@ -90,9 +106,34 @@
     }
   }
 
-  // Projects the equirectangular NASA Blue Marble texture onto a circle using
+  // Projects an equirectangular texture onto a destination canvas using
   // arcsine column spacing so longitude lines compress toward the limb, the
-  // way they actually foreshorten on a sphere viewed from outside.
+  // way they actually foreshorten on a sphere viewed from outside. Caller is
+  // responsible for clipping the destination to the sphere circle first.
+  function projectColumns(destCtx, img, size, R, step, sliceW, centerLon) {
+    var srcW = img.naturalWidth || img.width;
+    var srcH = img.naturalHeight || img.height;
+    for (var px = 0; px < size; px += step) {
+      var u = (px - R) / R;
+      if (u < -1) u = -1;
+      if (u > 1) u = 1;
+      var angleDeg = Math.asin(u) * (180 / Math.PI);
+      var lonDeg = centerLon + angleDeg;
+      var frac = ((lonDeg + 180) % 360 + 360) % 360 / 360;
+      var srcX = frac * srcW;
+      var sx = srcX - sliceW / 2;
+      if (sx < 0) sx += srcW;
+      if (sx + sliceW > srcW) {
+        destCtx.drawImage(img, sx, 0, srcW - sx, srcH, px, 0, step, size);
+      } else {
+        destCtx.drawImage(img, sx, 0, sliceW, srcH, px, 0, step, size);
+      }
+    }
+  }
+
+  var nightLayer = document.createElement('canvas');
+  var cloudsLayer = document.createElement('canvas');
+
   function renderEarthSphere(force) {
     if (!earthReady || !earth.sphereCanvas) return;
     if (!force && earth.lastRenderLon === earth.centerLon) return;
@@ -107,35 +148,93 @@
     sctx.arc(R, R, R, 0, Math.PI * 2);
     sctx.clip();
 
-    var srcW = earthImg.naturalWidth || earthImg.width;
-    var srcH = earthImg.naturalHeight || earthImg.height;
     var step = size > 500 ? 2 : 1;
     var sliceW = Math.max(1, Math.ceil((size / 220) * step));
 
-    for (var px = 0; px < size; px += step) {
-      var u = (px - R) / R;
-      if (u < -1) u = -1;
-      if (u > 1) u = 1;
-      var angleDeg = Math.asin(u) * (180 / Math.PI);
-      var lonDeg = earth.centerLon + angleDeg;
-      var frac = ((lonDeg + 180) % 360 + 360) % 360 / 360;
-      var srcX = frac * srcW;
-      var sx = srcX - sliceW / 2;
-      if (sx < 0) sx += srcW;
-      if (sx + sliceW > srcW) {
-        sctx.drawImage(earthImg, sx, 0, srcW - sx, srcH, px, 0, step, size);
-      } else {
-        sctx.drawImage(earthImg, sx, 0, sliceW, srcH, px, 0, step, size);
-      }
+    // Base day texture.
+    projectColumns(sctx, earthImg, size, R, step, sliceW, earth.centerLon);
+
+    // Light source is upper-left, matching the rim glow. The terminator line
+    // runs perpendicular to it, roughly diagonal top-left (day) to
+    // bottom-right (night). Sharp-ish transition band so the day/night line
+    // reads clearly instead of a soft, barely-visible fade.
+    function terminatorGradient(ctx2d) {
+      var g = ctx2d.createLinearGradient(size * 0.02, size * 0.0, size * 0.98, size * 1.0);
+      g.addColorStop(0, 'rgba(0,0,0,0)');
+      g.addColorStop(0.38, 'rgba(0,0,0,0)');
+      g.addColorStop(0.5, 'rgba(1,2,10,0.65)');
+      g.addColorStop(0.6, 'rgba(1,2,8,0.93)');
+      g.addColorStop(1, 'rgba(0,1,6,0.99)');
+      return g;
     }
 
-    // Day/night terminator — light source from upper-left, matching the rim glow.
-    var termGrad = sctx.createLinearGradient(size * 0.08, size * 0.05, size * 0.92, size * 0.95);
-    termGrad.addColorStop(0, 'rgba(255,255,255,0)');
-    termGrad.addColorStop(0.55, 'rgba(4,6,14,0.12)');
-    termGrad.addColorStop(1, 'rgba(2,3,8,0.72)');
-    sctx.fillStyle = termGrad;
+    // Darken the day side into the night side FIRST, so night lights
+    // composited afterward don't get crushed back down by this overlay.
+    sctx.fillStyle = terminatorGradient(sctx);
     sctx.fillRect(0, 0, size, size);
+
+    // Night lights, masked so they only appear in the shadowed hemisphere,
+    // screened on top of the now-darkened surface.
+    if (nightReady) {
+      if (nightLayer.width !== size) {
+        nightLayer.width = size;
+        nightLayer.height = size;
+      }
+      var nctx = nightLayer.getContext('2d');
+      nctx.clearRect(0, 0, size, size);
+      nctx.save();
+      nctx.beginPath();
+      nctx.arc(R, R, R, 0, Math.PI * 2);
+      nctx.clip();
+      nctx.filter = 'brightness(1.6) contrast(1.35) saturate(1.3)';
+      projectColumns(nctx, nightImg, size, R, step, sliceW, earth.centerLon);
+      nctx.filter = 'none';
+      nctx.globalCompositeOperation = 'destination-in';
+      var nightMask = nctx.createLinearGradient(size * 0.02, size * 0.0, size * 0.98, size * 1.0);
+      nightMask.addColorStop(0, 'rgba(0,0,0,0)');
+      nightMask.addColorStop(0.42, 'rgba(0,0,0,0)');
+      nightMask.addColorStop(0.55, 'rgba(0,0,0,0.9)');
+      nightMask.addColorStop(0.65, 'rgba(0,0,0,1)');
+      nightMask.addColorStop(1, 'rgba(0,0,0,1)');
+      nctx.fillStyle = nightMask;
+      nctx.fillRect(0, 0, size, size);
+      nctx.restore();
+
+      sctx.globalCompositeOperation = 'screen';
+      sctx.drawImage(nightLayer, 0, 0);
+      sctx.globalCompositeOperation = 'source-over';
+    }
+
+    // Cloud layer — grayscale cloud-fraction map, "screen" blended so bright
+    // (cloudy) pixels add white and black (clear sky) pixels leave the
+    // surface untouched underneath.
+    if (cloudsReady) {
+      if (cloudsLayer.width !== size) {
+        cloudsLayer.width = size;
+        cloudsLayer.height = size;
+      }
+      var cctx = cloudsLayer.getContext('2d');
+      cctx.clearRect(0, 0, size, size);
+      cctx.save();
+      cctx.beginPath();
+      cctx.arc(R, R, R, 0, Math.PI * 2);
+      cctx.clip();
+      projectColumns(cctx, cloudsImg, size, R, step, sliceW, earth.centerLon);
+      // Fade clouds on the night side too so they don't wash out city lights.
+      cctx.globalCompositeOperation = 'destination-in';
+      var cloudMask = cctx.createLinearGradient(size * 0.02, size * 0.0, size * 0.98, size * 1.0);
+      cloudMask.addColorStop(0, 'rgba(255,255,255,1)');
+      cloudMask.addColorStop(0.45, 'rgba(255,255,255,1)');
+      cloudMask.addColorStop(0.6, 'rgba(255,255,255,0.3)');
+      cloudMask.addColorStop(1, 'rgba(255,255,255,0.15)');
+      cctx.fillStyle = cloudMask;
+      cctx.fillRect(0, 0, size, size);
+      cctx.restore();
+
+      sctx.globalCompositeOperation = 'screen';
+      sctx.drawImage(cloudsLayer, 0, 0);
+      sctx.globalCompositeOperation = 'source-over';
+    }
 
     // Subtle spherical vignette so the limb reads as curved, not a flat disc.
     var vign = sctx.createRadialGradient(R, R, R * 0.55, R, R, R);

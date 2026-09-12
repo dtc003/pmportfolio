@@ -41,7 +41,7 @@
 ## Layout
 - **Approach:** Grid-disciplined content columns inside full-bleed cinematic section blocks. Landing hero specifically uses a SpaceX-style split layout: left-aligned text column (headline/subhead/single CTA), hero visual (Earth) on the right.
 - **Grid:** Single-column content, max-width container, sections stack full-height/full-bleed on the landing hero.
-- **Max content width:** 1080px (unchanged); hero text column max-width 560px.
+- **Max content width:** 1080px (unchanged); hero text column capped at `min(430px, 42vw)` on desktop so it never runs into the Earth, but reverts to full width below 640px (the Earth relocates to a corner there and no longer needs the clearance). Flex items need explicit `min-width: 0` here — the default `min-width: auto` on a flex child otherwise refuses to shrink below the widest word and overflows the viewport.
 - **Border radius:** Sharp/precise — buttons 4px (exact SpaceX match), cards/panels 8–12px max, no fully-rounded pill shapes anywhere. This is a deliberate departure from the site's previous fully-rounded (999px) buttons.
 
 ## Motion
@@ -50,11 +50,15 @@
 - **Duration:** micro 100ms, short 200ms, medium 300ms. No bounce/spring easing anywhere.
 
 ## Hero Visual — Earth
-- Single large sphere, real NASA Blue Marble-derived texture (public domain), not a flat gradient circle. Rendered via arcsine-column spherical projection (not a flat pasted rectangle) so the limb genuinely foreshortens.
+- Single large sphere, built from three real NASA public-domain textures, not a flat gradient circle: day (Blue Marble land_shallow_topo), night city lights (Black Marble / Earth at Night 2012), and a cloud-fraction composite. Rendered via arcsine-column spherical projection (not a flat pasted rectangle) so the limb genuinely foreshortens.
 - Positioned fully on-screen on the right side of the landing hero, vertically centered in the hero's viewport height (desktop) — not cropped off-frame, per explicit user preference (differs from SpaceX's own edge-cropped Mars). On narrow viewports (<640px) it moves to the bottom-right corner, sized down, so it never sits behind the headline text.
 - Continuous smooth rotation (~0.18°/45ms, full rotation ~90s) + subtle mouse-parallax drift, soft atmospheric rim-light glow. Must stay smooth/continuous, not visibly stepping — regenerate the sphere projection frequently in small increments rather than large jumps.
+- Day/night terminator: a sharp-edged diagonal darkening gradient (light source fixed upper-left, matching the rim glow) applied to the day texture, giving a clear shadow line like SpaceX's Mars — not just a subtle vignette.
+- Night lights: the Black Marble texture, brightness/contrast-boosted, masked to only the shadowed hemisphere, and composited with a **'screen' blend applied AFTER the terminator darkening**. Order matters here — compositing lights before darkening lets the darkening overlay crush them back down to near-black; darken first, then screen the lights on top.
+- Clouds: the grayscale cloud-fraction composite, 'screen' blended (bright/cloudy pixels add white, black/clear-sky pixels leave the surface untouched), faded down on the night side so they don't wash out city lights.
 - Only rendered on pages with a `.hero` element (landing page) — the canvas is `position: fixed`, so drawing it site-wide previously caused it to overlap scrolled content on the Portfolio page. Do not re-enable it globally without also solving that overlap.
 - All other planets (the two smaller ones + moon) are removed — one hero body only.
+- Texture assets live in `public/assets/img/` (`earth.jpg`, `earth-night.jpg`, `earth-clouds.jpg`) with sources noted in `earth-attribution.txt`.
 
 ## Decisions Log
 | Date | Decision | Rationale |
@@ -68,3 +72,6 @@
 | 2026-09-11 | Sphere rotation updates every 45ms in 0.18° steps (was every 1800ms in 2.2° jumps) | Prior interval produced visibly jerky, discrete jumps; frequent small increments read as smooth continuous rotation. |
 | 2026-09-11 | Star field made smaller and sparser (radius ~0.35–1.7px, ~1 star per 4500px²; was ~0.5–2.6px, 1 per 2600px²) | User request — stars were too large/dense relative to the more restrained, precise SpaceX-inspired mood. |
 | 2026-09-11 | Renamed "Blog" to "Essays" sitewide, including the URL (`/blog` → `/essays`) | User request to retitle the section; changed both the label and the route for consistency rather than leaving them mismatched. |
+| 2026-09-11 | Added realistic day/night terminator, NASA night-lights, and cloud layer to the Earth hero | User request to make the Earth "look more realistic" like SpaceX's Mars. Required reordering the compositing pipeline (darken before adding lights, not after) to avoid the darkening overlay crushing the lights back to black. |
+| 2026-09-11 | Moved LinkedIn/X/Email into the nav (all three), removed the footer social row entirely | User request — same links were duplicated in both header and footer; now they live only in the header. |
+| 2026-09-11 | Hero text column narrowed and made responsive (`min(430px, 42vw)` on desktop, full width below 640px) with explicit `min-width: 0` | Fixed two bugs found via testing: text overlapping the Earth on desktop, and "CHRISTENSEN" overflowing off-screen on mobile from the flexbox min-width-auto trap. |
