@@ -283,10 +283,14 @@ img {
 .hero .container {
   display: flex;
   min-width: 0;
+  max-width: none;
+  margin: 0;
+  padding-left: clamp(24px, 8vw, 140px);
+  padding-right: 24px;
 }
 
 .hero-content {
-  max-width: min(430px, 42vw);
+  max-width: 600px;
   min-width: 0;
 }
 

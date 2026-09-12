@@ -156,15 +156,15 @@
 
     // Light source is upper-left, matching the rim glow. The terminator line
     // runs perpendicular to it, roughly diagonal top-left (day) to
-    // bottom-right (night). Sharp-ish transition band so the day/night line
-    // reads clearly instead of a soft, barely-visible fade.
+    // bottom-right (night). Hard-edged transition — a crisp line like
+    // SpaceX's Mars, not a soft vignette-style fade.
     function terminatorGradient(ctx2d) {
       var g = ctx2d.createLinearGradient(size * 0.02, size * 0.0, size * 0.98, size * 1.0);
       g.addColorStop(0, 'rgba(0,0,0,0)');
-      g.addColorStop(0.38, 'rgba(0,0,0,0)');
-      g.addColorStop(0.5, 'rgba(1,2,10,0.65)');
-      g.addColorStop(0.6, 'rgba(1,2,8,0.93)');
-      g.addColorStop(1, 'rgba(0,1,6,0.99)');
+      g.addColorStop(0.46, 'rgba(0,0,0,0)');
+      g.addColorStop(0.5, 'rgba(0,0,0,0.9)');
+      g.addColorStop(0.54, 'rgba(0,0,0,1)');
+      g.addColorStop(1, 'rgba(0,0,0,1)');
       return g;
     }
 
@@ -192,9 +192,9 @@
       nctx.globalCompositeOperation = 'destination-in';
       var nightMask = nctx.createLinearGradient(size * 0.02, size * 0.0, size * 0.98, size * 1.0);
       nightMask.addColorStop(0, 'rgba(0,0,0,0)');
-      nightMask.addColorStop(0.42, 'rgba(0,0,0,0)');
-      nightMask.addColorStop(0.55, 'rgba(0,0,0,0.9)');
-      nightMask.addColorStop(0.65, 'rgba(0,0,0,1)');
+      nightMask.addColorStop(0.46, 'rgba(0,0,0,0)');
+      nightMask.addColorStop(0.5, 'rgba(0,0,0,0.9)');
+      nightMask.addColorStop(0.54, 'rgba(0,0,0,1)');
       nightMask.addColorStop(1, 'rgba(0,0,0,1)');
       nctx.fillStyle = nightMask;
       nctx.fillRect(0, 0, size, size);
@@ -224,8 +224,8 @@
       cctx.globalCompositeOperation = 'destination-in';
       var cloudMask = cctx.createLinearGradient(size * 0.02, size * 0.0, size * 0.98, size * 1.0);
       cloudMask.addColorStop(0, 'rgba(255,255,255,1)');
-      cloudMask.addColorStop(0.45, 'rgba(255,255,255,1)');
-      cloudMask.addColorStop(0.6, 'rgba(255,255,255,0.3)');
+      cloudMask.addColorStop(0.46, 'rgba(255,255,255,1)');
+      cloudMask.addColorStop(0.54, 'rgba(255,255,255,0.3)');
       cloudMask.addColorStop(1, 'rgba(255,255,255,0.15)');
       cctx.fillStyle = cloudMask;
       cctx.fillRect(0, 0, size, size);
