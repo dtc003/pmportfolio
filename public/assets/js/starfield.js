@@ -110,7 +110,16 @@
       earth.x = width - earth.r - margin;
       earth.y = 72 + (height - 72) / 2;
     }
-    var sphereSize = Math.round(diameter * dpr);
+    // Internal render resolution is capped well below the display size and
+    // upscaled via drawImage (cheap, GPU-accelerated bitmap scaling) rather
+    // than compositing the full per-column projection at full display
+    // resolution every tick — that was the actual cost driver, not the
+    // rotation itself. SpaceX's equivalent (inspected directly) is a
+    // pre-rendered video, not a live per-frame render, which is why it
+    // costs nothing at runtime; this is the closest equivalent for a
+    // canvas-generated sphere: do the expensive part at a fixed modest
+    // resolution, stretch the result to display size.
+    var sphereSize = Math.round(Math.min(diameter * dpr, 480));
     if (sphereSize !== earth.sphereSize) {
       earth.sphereSize = sphereSize;
       earth.sphereCanvas = document.createElement('canvas');
@@ -162,29 +171,34 @@
     sctx.arc(R, R, R, 0, Math.PI * 2);
     sctx.clip();
 
-    var step = size > 500 ? 2 : 1;
+    var step = size > 340 ? 2 : 1;
     var sliceW = Math.max(1, Math.ceil((size / 220) * step));
 
     // Base day texture.
     projectColumns(sctx, earthImg, size, R, step, sliceW, earth.centerLon);
 
-    // Terminator runs as a straight VERTICAL line (light left, dark right),
-    // matching how SpaceX's Mars phase reads on their homepage, rather than
-    // a diagonal split. All three masks below share this exact axis so the
-    // day/night boundary, night lights, and cloud fade all line up.
+    // Terminator runs along a VERTICAL axis (light left, dark right) rather
+    // than a diagonal split, but fades gradually across a wide band — like
+    // the real spacex.com Mars phase, not a hard binary edge. All three
+    // masks below share this exact axis so the day/night boundary, night
+    // lights, and cloud fade all line up.
     function verticalAxisGradient(ctx2d, stops) {
-      var g = ctx2d.createLinearGradient(size * 0.46, 0, size * 0.54, 0);
+      var g = ctx2d.createLinearGradient(size * 0.2, 0, size * 0.8, 0);
       for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
       return g;
     }
 
     // Darken the day side into the night side FIRST, so night lights
     // composited afterward don't get crushed back down by this overlay.
-    // Near-total blackout on the night side — only city lights should read.
+    // Gradual falloff to near-total blackout — only city lights should read
+    // once fully into shadow.
     sctx.fillStyle = verticalAxisGradient(sctx, [
       [0, 'rgba(0,0,0,0)'],
-      [0.48, 'rgba(0,0,0,0)'],
-      [0.5, 'rgba(0,0,0,1)'],
+      [0.25, 'rgba(0,0,0,0)'],
+      [0.45, 'rgba(0,0,0,0.25)'],
+      [0.6, 'rgba(0,0,0,0.6)'],
+      [0.75, 'rgba(0,0,0,0.88)'],
+      [0.9, 'rgba(0,0,0,0.98)'],
       [1, 'rgba(0,0,0,1)']
     ]);
     sctx.fillRect(0, 0, size, size);
@@ -211,8 +225,11 @@
       nctx.globalCompositeOperation = 'destination-in';
       nctx.fillStyle = verticalAxisGradient(nctx, [
         [0, 'rgba(0,0,0,0)'],
-        [0.48, 'rgba(0,0,0,0)'],
-        [0.5, 'rgba(0,0,0,1)'],
+        [0.25, 'rgba(0,0,0,0)'],
+        [0.45, 'rgba(0,0,0,0.25)'],
+        [0.6, 'rgba(0,0,0,0.6)'],
+        [0.75, 'rgba(0,0,0,0.88)'],
+        [0.9, 'rgba(0,0,0,0.98)'],
         [1, 'rgba(0,0,0,1)']
       ]);
       nctx.fillRect(0, 0, size, size);
@@ -242,8 +259,11 @@
       cctx.globalCompositeOperation = 'destination-in';
       cctx.fillStyle = verticalAxisGradient(cctx, [
         [0, 'rgba(255,255,255,1)'],
-        [0.48, 'rgba(255,255,255,1)'],
-        [0.5, 'rgba(255,255,255,0.04)'],
+        [0.25, 'rgba(255,255,255,1)'],
+        [0.45, 'rgba(255,255,255,0.8)'],
+        [0.6, 'rgba(255,255,255,0.45)'],
+        [0.75, 'rgba(255,255,255,0.15)'],
+        [0.9, 'rgba(255,255,255,0.05)'],
         [1, 'rgba(255,255,255,0.04)']
       ]);
       cctx.fillRect(0, 0, size, size);
@@ -368,8 +388,8 @@
     drawShootingStars();
 
     if (!reduceMotion) {
-      if (time - lastRotationTick > 45) {
-        earth.centerLon = (earth.centerLon + 0.18) % 360;
+      if (time - lastRotationTick > 220) {
+        earth.centerLon = (earth.centerLon + 0.88) % 360;
         renderEarthSphere(false);
         lastRotationTick = time;
       }
