@@ -14,7 +14,7 @@
   var shootingStars = [];
   var mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
   var lastShotAt = 0;
-  var nextShotDelay = randomBetween(2500, 6000);
+  var nextShotDelay = randomBetween(5000, 12000);
 
   var earth = {
     x: 0, y: 0, r: 0, depth: 0.12,
@@ -82,18 +82,32 @@
     }
   }
 
+  var EARTH_SCALE = 1.6;
+  var heroContentEl = document.querySelector('.hero-content');
+
   function buildEarth() {
     var isNarrow = width < 640;
-    var diameter = isNarrow
-      ? Math.min(width * 0.7, height * 0.4)
-      : Math.min(width * 0.3, height * 0.55);
-    diameter = Math.max(180, Math.min(diameter, 400));
-    earth.r = diameter / 2;
     if (isNarrow) {
-      earth.x = width - earth.r * 0.55;
-      earth.y = height - earth.r * 0.85;
+      var heroActions = document.querySelector('.hero-actions');
+      var diameter = Math.min(width * 0.7, height * 0.4) * EARTH_SCALE;
+      diameter = Math.max(220, Math.min(diameter, 460));
+      earth.r = diameter / 2;
+      earth.x = width - earth.r * 0.45;
+      var actionsBottom = heroActions ? heroActions.getBoundingClientRect().bottom : height * 0.7;
+      earth.y = Math.max(actionsBottom + earth.r * 0.4, height - earth.r * 0.6);
     } else {
-      earth.x = width - earth.r - Math.max(70, width * 0.09);
+      var margin = Math.max(70, width * 0.09);
+      var idealDiameter = Math.min(width * 0.3, height * 0.55) * EARTH_SCALE;
+      idealDiameter = Math.max(280, Math.min(idealDiameter, 640));
+      // Measure the actual rendered text column so the sphere can never
+      // overlap it, whatever the font/viewport combination does — a fixed
+      // px/vw formula can't account for real text metrics at every width.
+      var textRight = heroContentEl ? heroContentEl.getBoundingClientRect().right : 0;
+      var gap = 48;
+      var availableWidth = width - margin - textRight - gap;
+      var diameter = Math.max(200, Math.min(idealDiameter, availableWidth));
+      earth.r = diameter / 2;
+      earth.x = width - earth.r - margin;
       earth.y = 72 + (height - 72) / 2;
     }
     var sphereSize = Math.round(diameter * dpr);
@@ -154,23 +168,25 @@
     // Base day texture.
     projectColumns(sctx, earthImg, size, R, step, sliceW, earth.centerLon);
 
-    // Light source is upper-left, matching the rim glow. The terminator line
-    // runs perpendicular to it, roughly diagonal top-left (day) to
-    // bottom-right (night). Hard-edged transition — a crisp line like
-    // SpaceX's Mars, not a soft vignette-style fade.
-    function terminatorGradient(ctx2d) {
-      var g = ctx2d.createLinearGradient(size * 0.02, size * 0.0, size * 0.98, size * 1.0);
-      g.addColorStop(0, 'rgba(0,0,0,0)');
-      g.addColorStop(0.46, 'rgba(0,0,0,0)');
-      g.addColorStop(0.5, 'rgba(0,0,0,0.9)');
-      g.addColorStop(0.54, 'rgba(0,0,0,1)');
-      g.addColorStop(1, 'rgba(0,0,0,1)');
+    // Terminator runs as a straight VERTICAL line (light left, dark right),
+    // matching how SpaceX's Mars phase reads on their homepage, rather than
+    // a diagonal split. All three masks below share this exact axis so the
+    // day/night boundary, night lights, and cloud fade all line up.
+    function verticalAxisGradient(ctx2d, stops) {
+      var g = ctx2d.createLinearGradient(size * 0.46, 0, size * 0.54, 0);
+      for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
       return g;
     }
 
     // Darken the day side into the night side FIRST, so night lights
     // composited afterward don't get crushed back down by this overlay.
-    sctx.fillStyle = terminatorGradient(sctx);
+    // Near-total blackout on the night side — only city lights should read.
+    sctx.fillStyle = verticalAxisGradient(sctx, [
+      [0, 'rgba(0,0,0,0)'],
+      [0.48, 'rgba(0,0,0,0)'],
+      [0.5, 'rgba(0,0,0,1)'],
+      [1, 'rgba(0,0,0,1)']
+    ]);
     sctx.fillRect(0, 0, size, size);
 
     // Night lights, masked so they only appear in the shadowed hemisphere,
@@ -186,17 +202,19 @@
       nctx.beginPath();
       nctx.arc(R, R, R, 0, Math.PI * 2);
       nctx.clip();
-      nctx.filter = 'brightness(1.6) contrast(1.35) saturate(1.3)';
+      // High contrast, no brightness lift: crushes the ocean's faint blue
+      // tint down to true black while still popping city lights, so the
+      // night side reads as "just the lights," not a lit blue hemisphere.
+      nctx.filter = 'contrast(2.4) saturate(1.4) brightness(1.05)';
       projectColumns(nctx, nightImg, size, R, step, sliceW, earth.centerLon);
       nctx.filter = 'none';
       nctx.globalCompositeOperation = 'destination-in';
-      var nightMask = nctx.createLinearGradient(size * 0.02, size * 0.0, size * 0.98, size * 1.0);
-      nightMask.addColorStop(0, 'rgba(0,0,0,0)');
-      nightMask.addColorStop(0.46, 'rgba(0,0,0,0)');
-      nightMask.addColorStop(0.5, 'rgba(0,0,0,0.9)');
-      nightMask.addColorStop(0.54, 'rgba(0,0,0,1)');
-      nightMask.addColorStop(1, 'rgba(0,0,0,1)');
-      nctx.fillStyle = nightMask;
+      nctx.fillStyle = verticalAxisGradient(nctx, [
+        [0, 'rgba(0,0,0,0)'],
+        [0.48, 'rgba(0,0,0,0)'],
+        [0.5, 'rgba(0,0,0,1)'],
+        [1, 'rgba(0,0,0,1)']
+      ]);
       nctx.fillRect(0, 0, size, size);
       nctx.restore();
 
@@ -207,7 +225,8 @@
 
     // Cloud layer — grayscale cloud-fraction map, "screen" blended so bright
     // (cloudy) pixels add white and black (clear sky) pixels leave the
-    // surface untouched underneath.
+    // surface untouched underneath. Cut almost entirely on the night side —
+    // only lights should show through the shadow, not cloud haze.
     if (cloudsReady) {
       if (cloudsLayer.width !== size) {
         cloudsLayer.width = size;
@@ -220,14 +239,13 @@
       cctx.arc(R, R, R, 0, Math.PI * 2);
       cctx.clip();
       projectColumns(cctx, cloudsImg, size, R, step, sliceW, earth.centerLon);
-      // Fade clouds on the night side too so they don't wash out city lights.
       cctx.globalCompositeOperation = 'destination-in';
-      var cloudMask = cctx.createLinearGradient(size * 0.02, size * 0.0, size * 0.98, size * 1.0);
-      cloudMask.addColorStop(0, 'rgba(255,255,255,1)');
-      cloudMask.addColorStop(0.46, 'rgba(255,255,255,1)');
-      cloudMask.addColorStop(0.54, 'rgba(255,255,255,0.3)');
-      cloudMask.addColorStop(1, 'rgba(255,255,255,0.15)');
-      cctx.fillStyle = cloudMask;
+      cctx.fillStyle = verticalAxisGradient(cctx, [
+        [0, 'rgba(255,255,255,1)'],
+        [0.48, 'rgba(255,255,255,1)'],
+        [0.5, 'rgba(255,255,255,0.04)'],
+        [1, 'rgba(255,255,255,0.04)']
+      ]);
       cctx.fillRect(0, 0, size, size);
       cctx.restore();
 
@@ -248,9 +266,9 @@
 
   function spawnShootingStar(originX, originY) {
     var fromEdge = originX === undefined;
-    var x = fromEdge ? randomBetween(0, width * 0.6) : originX;
-    var y = fromEdge ? randomBetween(0, height * 0.3) : originY;
-    var angle = randomBetween(0.35, 0.85);
+    var x = fromEdge ? randomBetween(-width * 0.3, width * 0.9) : originX;
+    var y = fromEdge ? randomBetween(-height * 0.15, height * 0.45) : originY;
+    var angle = randomBetween(0.1, 1.1);
     var speed = randomBetween(9, 15);
     shootingStars.push({
       x: x,
@@ -298,14 +316,14 @@
       ctx.drawImage(earth.sphereCanvas, ex - earth.r, ey - earth.r, earth.r * 2, earth.r * 2);
     }
 
-    // Rim light along the lit (upper-left) edge.
+    // Rim light along the lit (left) edge, matching the vertical terminator.
     ctx.save();
     ctx.beginPath();
     ctx.arc(ex, ey, earth.r, 0, Math.PI * 2);
     ctx.clip();
     var rim = ctx.createRadialGradient(
-      ex - earth.r * 0.55, ey - earth.r * 0.55, earth.r * 0.1,
-      ex - earth.r * 0.55, ey - earth.r * 0.55, earth.r * 1.5
+      ex - earth.r * 0.75, ey, earth.r * 0.1,
+      ex - earth.r * 0.75, ey, earth.r * 1.5
     );
     rim.addColorStop(0, 'rgba(255,255,255,0.16)');
     rim.addColorStop(0.4, 'rgba(255,255,255,0)');
@@ -358,7 +376,7 @@
       if (time - lastShotAt > nextShotDelay) {
         spawnShootingStar();
         lastShotAt = time;
-        nextShotDelay = randomBetween(3500, 8000);
+        nextShotDelay = randomBetween(7000, 16000);
       }
     }
 
