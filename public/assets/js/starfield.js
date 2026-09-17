@@ -16,18 +16,22 @@
   var lastShotAt = 0;
   var nextShotDelay = randomBetween(5000, 12000);
 
+  var FRAME_COUNT = 72;
+  var ROTATION_DEG_PER_MS = 4 / 1000;
+
   var earth = {
     x: 0, y: 0, r: 0, depth: 0.12,
-    sphereCanvas: null,
     sphereSize: 0,
-    centerLon: -35,
-    lastRenderLon: null
+    displayLon: -35,
+    frames: [],
+    framesReady: false,
+    buildToken: 0
   };
   var earthImg = new Image();
   var earthReady = false;
   earthImg.onload = function () {
     earthReady = true;
-    renderEarthSphere(true);
+    startFramePrecompute();
   };
   earthImg.src = '/assets/img/earth.jpg';
 
@@ -35,7 +39,7 @@
   var nightReady = false;
   nightImg.onload = function () {
     nightReady = true;
-    renderEarthSphere(true);
+    startFramePrecompute();
   };
   nightImg.src = '/assets/img/earth-night.jpg';
 
@@ -43,7 +47,7 @@
   var cloudsReady = false;
   cloudsImg.onload = function () {
     cloudsReady = true;
-    renderEarthSphere(true);
+    startFramePrecompute();
   };
   cloudsImg.src = '/assets/img/earth-clouds.jpg';
 
@@ -122,10 +126,7 @@
     var sphereSize = Math.round(Math.min(diameter * dpr, 480));
     if (sphereSize !== earth.sphereSize) {
       earth.sphereSize = sphereSize;
-      earth.sphereCanvas = document.createElement('canvas');
-      earth.sphereCanvas.width = sphereSize;
-      earth.sphereCanvas.height = sphereSize;
-      if (earthReady) renderEarthSphere(true);
+      startFramePrecompute();
     }
   }
 
@@ -157,14 +158,43 @@
   var nightLayer = document.createElement('canvas');
   var cloudsLayer = document.createElement('canvas');
 
-  function renderEarthSphere(force) {
-    if (!earthReady || !earth.sphereCanvas) return;
-    if (!force && earth.lastRenderLon === earth.centerLon) return;
-    earth.lastRenderLon = earth.centerLon;
+  // Terminator runs along a VERTICAL axis (light left, dark right) rather
+  // than a diagonal split, but fades gradually across a wide band — like
+  // the real spacex.com Mars phase, not a hard binary edge. All three masks
+  // below share this exact axis so the day/night boundary, night lights,
+  // and cloud fade all line up. Stops pushed darker/earlier than a first
+  // pass — that version read as too washed-out once seen at full size.
+  var SHADOW_STOPS = [
+    [0, 'rgba(0,0,0,0)'],
+    [0.18, 'rgba(0,0,0,0)'],
+    [0.35, 'rgba(0,0,0,0.4)'],
+    [0.5, 'rgba(0,0,0,0.78)'],
+    [0.65, 'rgba(0,0,0,0.95)'],
+    [0.8, 'rgba(0,0,0,0.995)'],
+    [1, 'rgba(0,0,0,1)']
+  ];
+  var CLOUD_FADE_STOPS = [
+    [0, 'rgba(255,255,255,1)'],
+    [0.18, 'rgba(255,255,255,1)'],
+    [0.35, 'rgba(255,255,255,0.7)'],
+    [0.5, 'rgba(255,255,255,0.3)'],
+    [0.65, 'rgba(255,255,255,0.1)'],
+    [0.8, 'rgba(255,255,255,0.04)'],
+    [1, 'rgba(255,255,255,0.04)']
+  ];
 
-    var size = earth.sphereSize;
+  function verticalAxisGradient(ctx2d, size, stops) {
+    var g = ctx2d.createLinearGradient(size * 0.2, 0, size * 0.8, 0);
+    for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
+    return g;
+  }
+
+  // Pure: composes one fully-lit/shadowed/cloud-covered sphere at a given
+  // longitude into destCanvas. Used both by the one-time frame precompute
+  // and (before precompute finishes) as an immediate single-frame fallback.
+  function composeSphereInto(destCanvas, size, lonDeg) {
     var R = size / 2;
-    var sctx = earth.sphereCanvas.getContext('2d');
+    var sctx = destCanvas.getContext('2d');
     sctx.clearRect(0, 0, size, size);
     sctx.save();
     sctx.beginPath();
@@ -174,37 +204,11 @@
     var step = size > 340 ? 2 : 1;
     var sliceW = Math.max(1, Math.ceil((size / 220) * step));
 
-    // Base day texture.
-    projectColumns(sctx, earthImg, size, R, step, sliceW, earth.centerLon);
+    projectColumns(sctx, earthImg, size, R, step, sliceW, lonDeg);
 
-    // Terminator runs along a VERTICAL axis (light left, dark right) rather
-    // than a diagonal split, but fades gradually across a wide band — like
-    // the real spacex.com Mars phase, not a hard binary edge. All three
-    // masks below share this exact axis so the day/night boundary, night
-    // lights, and cloud fade all line up.
-    function verticalAxisGradient(ctx2d, stops) {
-      var g = ctx2d.createLinearGradient(size * 0.2, 0, size * 0.8, 0);
-      for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
-      return g;
-    }
-
-    // Darken the day side into the night side FIRST, so night lights
-    // composited afterward don't get crushed back down by this overlay.
-    // Gradual falloff to near-total blackout — only city lights should read
-    // once fully into shadow.
-    sctx.fillStyle = verticalAxisGradient(sctx, [
-      [0, 'rgba(0,0,0,0)'],
-      [0.25, 'rgba(0,0,0,0)'],
-      [0.45, 'rgba(0,0,0,0.25)'],
-      [0.6, 'rgba(0,0,0,0.6)'],
-      [0.75, 'rgba(0,0,0,0.88)'],
-      [0.9, 'rgba(0,0,0,0.98)'],
-      [1, 'rgba(0,0,0,1)']
-    ]);
+    sctx.fillStyle = verticalAxisGradient(sctx, size, SHADOW_STOPS);
     sctx.fillRect(0, 0, size, size);
 
-    // Night lights, masked so they only appear in the shadowed hemisphere,
-    // screened on top of the now-darkened surface.
     if (nightReady) {
       if (nightLayer.width !== size) {
         nightLayer.width = size;
@@ -220,18 +224,10 @@
       // tint down to true black while still popping city lights, so the
       // night side reads as "just the lights," not a lit blue hemisphere.
       nctx.filter = 'contrast(2.4) saturate(1.4) brightness(1.05)';
-      projectColumns(nctx, nightImg, size, R, step, sliceW, earth.centerLon);
+      projectColumns(nctx, nightImg, size, R, step, sliceW, lonDeg);
       nctx.filter = 'none';
       nctx.globalCompositeOperation = 'destination-in';
-      nctx.fillStyle = verticalAxisGradient(nctx, [
-        [0, 'rgba(0,0,0,0)'],
-        [0.25, 'rgba(0,0,0,0)'],
-        [0.45, 'rgba(0,0,0,0.25)'],
-        [0.6, 'rgba(0,0,0,0.6)'],
-        [0.75, 'rgba(0,0,0,0.88)'],
-        [0.9, 'rgba(0,0,0,0.98)'],
-        [1, 'rgba(0,0,0,1)']
-      ]);
+      nctx.fillStyle = verticalAxisGradient(nctx, size, SHADOW_STOPS);
       nctx.fillRect(0, 0, size, size);
       nctx.restore();
 
@@ -255,17 +251,9 @@
       cctx.beginPath();
       cctx.arc(R, R, R, 0, Math.PI * 2);
       cctx.clip();
-      projectColumns(cctx, cloudsImg, size, R, step, sliceW, earth.centerLon);
+      projectColumns(cctx, cloudsImg, size, R, step, sliceW, lonDeg);
       cctx.globalCompositeOperation = 'destination-in';
-      cctx.fillStyle = verticalAxisGradient(cctx, [
-        [0, 'rgba(255,255,255,1)'],
-        [0.25, 'rgba(255,255,255,1)'],
-        [0.45, 'rgba(255,255,255,0.8)'],
-        [0.6, 'rgba(255,255,255,0.45)'],
-        [0.75, 'rgba(255,255,255,0.15)'],
-        [0.9, 'rgba(255,255,255,0.05)'],
-        [1, 'rgba(255,255,255,0.04)']
-      ]);
+      cctx.fillStyle = verticalAxisGradient(cctx, size, CLOUD_FADE_STOPS);
       cctx.fillRect(0, 0, size, size);
       cctx.restore();
 
@@ -282,6 +270,43 @@
     sctx.fillRect(0, 0, size, size);
 
     sctx.restore();
+  }
+
+  // Precompute a full rotation as a set of cached bitmaps ONCE, instead of
+  // recomputing the three-layer projection live on every tick. A live
+  // recompute frequent enough to look smooth (every ~45ms) was expensive
+  // enough to visibly lag the whole page; throttling it enough to stop
+  // lagging (every ~220ms) made the rotation visibly step. Precomputing
+  // once and cross-fading between two cached frames each animation frame
+  // (see drawEarth) is cheap either way — two drawImage calls — so it can
+  // run at full frame rate without cost, matching the design-system note
+  // in DESIGN.md about how SpaceX gets this for free (their Mars is a
+  // pre-rendered video): this is the closest equivalent for a sphere we
+  // have to generate ourselves.
+  function startFramePrecompute() {
+    if (!earthReady || !earth.sphereSize) return;
+    var token = ++earth.buildToken;
+    earth.frames = [];
+    earth.framesReady = false;
+
+    var idx = 0;
+    function step() {
+      if (token !== earth.buildToken) return; // superseded by a resize
+      var size = earth.sphereSize;
+      var lon = (idx / FRAME_COUNT) * 360;
+      var frameCanvas = document.createElement('canvas');
+      frameCanvas.width = size;
+      frameCanvas.height = size;
+      composeSphereInto(frameCanvas, size, lon);
+      earth.frames[idx] = frameCanvas;
+      idx++;
+      if (idx < FRAME_COUNT) {
+        requestAnimationFrame(step);
+      } else {
+        earth.framesReady = true;
+      }
+    }
+    step();
   }
 
   function spawnShootingStar(originX, originY) {
@@ -332,8 +357,22 @@
     ctx.fillStyle = glow;
     ctx.fill();
 
-    if (earth.sphereCanvas) {
-      ctx.drawImage(earth.sphereCanvas, ex - earth.r, ey - earth.r, earth.r * 2, earth.r * 2);
+    var d = earth.r * 2;
+    if (earth.framesReady) {
+      var frameStep = 360 / FRAME_COUNT;
+      var raw = (((earth.displayLon % 360) + 360) % 360) / frameStep;
+      var idxA = Math.floor(raw) % FRAME_COUNT;
+      var idxB = (idxA + 1) % FRAME_COUNT;
+      var t = raw - Math.floor(raw);
+      ctx.globalAlpha = 1 - t;
+      ctx.drawImage(earth.frames[idxA], ex - earth.r, ey - earth.r, d, d);
+      ctx.globalAlpha = t;
+      ctx.drawImage(earth.frames[idxB], ex - earth.r, ey - earth.r, d, d);
+      ctx.globalAlpha = 1;
+    } else if (earth.frames.length) {
+      // Precompute still running — show the latest frame finished so far,
+      // static, rather than nothing.
+      ctx.drawImage(earth.frames[earth.frames.length - 1], ex - earth.r, ey - earth.r, d, d);
     }
 
     // Rim light along the lit (left) edge, matching the vertical terminator.
@@ -379,20 +418,19 @@
     }
   }
 
-  var lastRotationTick = 0;
+  var lastFrameTime = 0;
 
   function frame(time) {
+    var deltaMs = lastFrameTime ? Math.min(time - lastFrameTime, 100) : 0;
+    lastFrameTime = time;
+
     ctx.clearRect(0, 0, width, height);
     drawStars(time);
     drawEarth(time);
     drawShootingStars();
 
     if (!reduceMotion) {
-      if (time - lastRotationTick > 220) {
-        earth.centerLon = (earth.centerLon + 0.88) % 360;
-        renderEarthSphere(false);
-        lastRotationTick = time;
-      }
+      earth.displayLon = (earth.displayLon + ROTATION_DEG_PER_MS * deltaMs) % 360;
       if (time - lastShotAt > nextShotDelay) {
         spawnShootingStar();
         lastShotAt = time;
