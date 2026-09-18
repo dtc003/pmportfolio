@@ -403,7 +403,15 @@
     drawShootingStars();
 
     if (!reduceMotion) {
-      earth.displayLon = (earth.displayLon + ROTATION_DEG_PER_MS * deltaMs) % 360;
+      // Subtracting (not adding) here is deliberate: with our projection's
+      // convention (screen-right = higher/more-eastward longitude, the
+      // normal map convention), increasing centerLon over time makes a
+      // fixed geographic feature drift toward the LEFT — i.e. an
+      // east-to-west apparent motion. Real Earth rotates west-to-east
+      // (surface points move eastward; it's the literal definition of
+      // east), which reads as features drifting toward the RIGHT. That
+      // requires centerLon to decrease over time, not increase.
+      earth.displayLon = (earth.displayLon - ROTATION_DEG_PER_MS * deltaMs) % 360;
       if (time - lastEarthRenderTime > RECOMPUTE_INTERVAL_MS) {
         renderEarthNow();
         lastEarthRenderTime = time;
