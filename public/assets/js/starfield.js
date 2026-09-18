@@ -16,22 +16,21 @@
   var lastShotAt = 0;
   var nextShotDelay = randomBetween(5000, 12000);
 
-  var FRAME_COUNT = 72;
   var ROTATION_DEG_PER_MS = 4 / 1000;
+  var RECOMPUTE_INTERVAL_MS = 60;
 
   var earth = {
     x: 0, y: 0, r: 0, depth: 0.12,
     sphereSize: 0,
     displayLon: -35,
-    frames: [],
-    framesReady: false,
-    buildToken: 0
+    sphereCanvas: null,
+    lastRenderedLon: null
   };
   var earthImg = new Image();
   var earthReady = false;
   earthImg.onload = function () {
     earthReady = true;
-    startFramePrecompute();
+    renderEarthNow();
   };
   earthImg.src = '/assets/img/earth.jpg';
 
@@ -39,7 +38,7 @@
   var nightReady = false;
   nightImg.onload = function () {
     nightReady = true;
-    startFramePrecompute();
+    renderEarthNow();
   };
   nightImg.src = '/assets/img/earth-night.jpg';
 
@@ -47,7 +46,7 @@
   var cloudsReady = false;
   cloudsImg.onload = function () {
     cloudsReady = true;
-    startFramePrecompute();
+    renderEarthNow();
   };
   cloudsImg.src = '/assets/img/earth-clouds.jpg';
 
@@ -126,7 +125,11 @@
     var sphereSize = Math.round(Math.min(diameter * dpr, 480));
     if (sphereSize !== earth.sphereSize) {
       earth.sphereSize = sphereSize;
-      startFramePrecompute();
+      earth.sphereCanvas = document.createElement('canvas');
+      earth.sphereCanvas.width = sphereSize;
+      earth.sphereCanvas.height = sphereSize;
+      earth.lastRenderedLon = null;
+      renderEarthNow();
     }
   }
 
@@ -190,8 +193,7 @@
   }
 
   // Pure: composes one fully-lit/shadowed/cloud-covered sphere at a given
-  // longitude into destCanvas. Used both by the one-time frame precompute
-  // and (before precompute finishes) as an immediate single-frame fallback.
+  // longitude into destCanvas.
   function composeSphereInto(destCanvas, size, lonDeg) {
     var R = size / 2;
     var sctx = destCanvas.getContext('2d');
@@ -272,41 +274,33 @@
     sctx.restore();
   }
 
-  // Precompute a full rotation as a set of cached bitmaps ONCE, instead of
-  // recomputing the three-layer projection live on every tick. A live
-  // recompute frequent enough to look smooth (every ~45ms) was expensive
-  // enough to visibly lag the whole page; throttling it enough to stop
-  // lagging (every ~220ms) made the rotation visibly step. Precomputing
-  // once and cross-fading between two cached frames each animation frame
-  // (see drawEarth) is cheap either way — two drawImage calls — so it can
-  // run at full frame rate without cost, matching the design-system note
-  // in DESIGN.md about how SpaceX gets this for free (their Mars is a
-  // pre-rendered video): this is the closest equivalent for a sphere we
-  // have to generate ourselves.
-  function startFramePrecompute() {
-    if (!earthReady || !earth.sphereSize) return;
-    var token = ++earth.buildToken;
-    earth.frames = [];
-    earth.framesReady = false;
-
-    var idx = 0;
-    function step() {
-      if (token !== earth.buildToken) return; // superseded by a resize
-      var size = earth.sphereSize;
-      var lon = (idx / FRAME_COUNT) * 360;
-      var frameCanvas = document.createElement('canvas');
-      frameCanvas.width = size;
-      frameCanvas.height = size;
-      composeSphereInto(frameCanvas, size, lon);
-      earth.frames[idx] = frameCanvas;
-      idx++;
-      if (idx < FRAME_COUNT) {
-        requestAnimationFrame(step);
-      } else {
-        earth.framesReady = true;
-      }
-    }
-    step();
+  // Renders the sphere at its current displayLon directly into the single
+  // reusable sphereCanvas. Called on a short throttle (see frame()), not
+  // every animation frame.
+  //
+  // History here matters — two other approaches were tried and rejected:
+  // 1. Live recompute every ~45ms: smooth, but the recompute itself (three
+  //    layers of per-column projection) was expensive enough to visibly
+  //    lag the whole page.
+  // 2. Precomputing a fixed set of rotation frames once and cross-fading
+  //    between the two nearest via globalAlpha: cheap at runtime (two
+  //    drawImage calls), but a plain opacity dissolve between two full,
+  //    independently-rendered bitmaps of a *rotating* sphere reads as a
+  //    flicker/pulse on high-contrast detail (city lights, the sharp
+  //    terminator edge) rather than motion — it looks like fast, repeating
+  //    juddering, not a smooth spin. Confirmed by direct comparison; this
+  //    was the actual cause of the "way too fast / repeats" report, not a
+  //    speed miscalculation.
+  // The fix is a compromise between those two: recompute live (so every
+  // rendered frame is a genuine, correctly-projected sphere at its own
+  // angle — no dissolve artifact) but throttled to a short, fixed interval
+  // rather than every animation frame, now that the internal render
+  // resolution is already capped low (see buildEarth) — that resolution
+  // cap, not the interval, was the actual cost driver behind report #1.
+  function renderEarthNow() {
+    if (!earthReady || !earth.sphereCanvas) return;
+    composeSphereInto(earth.sphereCanvas, earth.sphereSize, earth.displayLon);
+    earth.lastRenderedLon = earth.displayLon;
   }
 
   function spawnShootingStar(originX, originY) {
@@ -348,31 +342,9 @@
 
     if (ey + earth.r * 1.2 < 0 || ey - earth.r * 1.2 > height) return;
 
-    // Outer atmosphere glow.
-    var glow = ctx.createRadialGradient(ex, ey, earth.r * 0.98, ex, ey, earth.r * 1.18);
-    glow.addColorStop(0, 'rgba(150,190,255,0.22)');
-    glow.addColorStop(1, 'rgba(150,190,255,0)');
-    ctx.beginPath();
-    ctx.arc(ex, ey, earth.r * 1.18, 0, Math.PI * 2);
-    ctx.fillStyle = glow;
-    ctx.fill();
-
-    var d = earth.r * 2;
-    if (earth.framesReady) {
-      var frameStep = 360 / FRAME_COUNT;
-      var raw = (((earth.displayLon % 360) + 360) % 360) / frameStep;
-      var idxA = Math.floor(raw) % FRAME_COUNT;
-      var idxB = (idxA + 1) % FRAME_COUNT;
-      var t = raw - Math.floor(raw);
-      ctx.globalAlpha = 1 - t;
-      ctx.drawImage(earth.frames[idxA], ex - earth.r, ey - earth.r, d, d);
-      ctx.globalAlpha = t;
-      ctx.drawImage(earth.frames[idxB], ex - earth.r, ey - earth.r, d, d);
-      ctx.globalAlpha = 1;
-    } else if (earth.frames.length) {
-      // Precompute still running — show the latest frame finished so far,
-      // static, rather than nothing.
-      ctx.drawImage(earth.frames[earth.frames.length - 1], ex - earth.r, ey - earth.r, d, d);
+    if (earth.sphereCanvas) {
+      var d = earth.r * 2;
+      ctx.drawImage(earth.sphereCanvas, ex - earth.r, ey - earth.r, d, d);
     }
 
     // Rim light along the lit (left) edge, matching the vertical terminator.
@@ -419,6 +391,7 @@
   }
 
   var lastFrameTime = 0;
+  var lastEarthRenderTime = 0;
 
   function frame(time) {
     var deltaMs = lastFrameTime ? Math.min(time - lastFrameTime, 100) : 0;
@@ -431,6 +404,10 @@
 
     if (!reduceMotion) {
       earth.displayLon = (earth.displayLon + ROTATION_DEG_PER_MS * deltaMs) % 360;
+      if (time - lastEarthRenderTime > RECOMPUTE_INTERVAL_MS) {
+        renderEarthNow();
+        lastEarthRenderTime = time;
+      }
       if (time - lastShotAt > nextShotDelay) {
         spawnShootingStar();
         lastShotAt = time;
