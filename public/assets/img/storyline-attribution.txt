@@ -1,0 +1,13 @@
+Career storyline images (public/assets/img/storyline/)
+
+innosight-christensen.jpg: "Clayton Christensen World Economic Forum 2013" by World Economic Forum / Remy Steinegger (swiss-image.ch), CC BY-SA 2.0, https://commons.wikimedia.org/wiki/File:Clayton_Christensen_World_Economic_Forum_2013.jpg. Changes: cropped square and resized to 640px. Credit is also shown in the page caption.
+ai-foundry-claude-symbol.svg: "Claude AI symbol", CC0 per Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Claude_AI_symbol.svg. Claude is a trademark of Anthropic, used here only to identify the partner program.
+ai-foundry-byu.png: "BYU Stretch Y Logo", Wikimedia Commons (listed CC BY-SA 4.0), https://commons.wikimedia.org/wiki/File:BYU_Stretch_Y_Logo.png. Trademark of Brigham Young University, used only to identify the employer. Changes: resized to 300px wide.
+origin-eagle.jpg: "Gerald Ford Eagle Scout medal", Gerald R. Ford Presidential Museum (NARA), public domain (U.S. federal government work), https://commons.wikimedia.org/wiki/File:Gerald_Ford_Eagle_Scout_medal.jpg. Changes: cropped to the medal and resized. Eagle Scout is a trademark of Scouting America.
+Brazil outline (inline SVG in index.html): simplified from johan/world.geo.json (derived from Natural Earth, public domain).
+
+Not yet sourced (labeled placeholders show until these files are added at these exact paths):
+- creamies-site.jpg: screenshot of the Creamies website
+- mock-trial-team.jpg: BYU mock trial team photo
+- brazil-photo-1.jpg, brazil-photo-2.jpg: personal photos from Goiânia
+- origin-medallion.jpg: Presidential Scholars medallion (no clearly licensed image found)
