@@ -42,27 +42,81 @@
   <header class="page-header">
     <div class="container">
       <h1>Essays</h1>
-      <p>Notes on product, strategy, and things I'm learning along the way.</p>
+      <p>Long-form essays on product and strategy, plus a running log of shorter thoughts.</p>
     </div>
   </header>
 
   <main class="container">
-    <section>
-      <div class="blog-list">
-        <a href="/essays/lorem-ipsum-post" class="blog-card panel">
-          <div class="blog-meta">
-            <span>Sample Post</span>
-            <span>&middot;</span>
-            <span>Coming Soon</span>
-            <span>&middot;</span>
-            <span>3 min read</span>
+    <div class="essays-layout">
+      <section class="essays-col" aria-labelledby="essays-heading">
+        <h2 class="section-heading" id="essays-heading"><span class="idx">01</span> Essays</h2>
+        <div class="blog-list">
+          <a href="/essays/lorem-ipsum-post" class="blog-card panel">
+            <div class="blog-meta">
+              <span>Sample</span>
+              <span>&middot;</span>
+              <span>Strategy</span>
+              <span>&middot;</span>
+              <span>6 min read</span>
+            </div>
+            <h2>Disruption Is a Process, Not an Event</h2>
+            <p>What a summer at Innosight taught me about why incumbents see disruption coming and still miss it, and what that means for teams building with AI right now.</p>
+            <span class="read-more">Read more <span>&rarr;</span></span>
+          </a>
+
+          <a href="/essays/lorem-ipsum-post" class="blog-card panel">
+            <div class="blog-meta">
+              <span>Sample</span>
+              <span>&middot;</span>
+              <span>Product</span>
+              <span>&middot;</span>
+              <span>5 min read</span>
+            </div>
+            <h2>What Mock Trial Taught Me About Shipping</h2>
+            <p>Hundreds of rounds, every one scored by a judge. Treating each round like a product release turned a first-year program into a top 10% team.</p>
+            <span class="read-more">Read more <span>&rarr;</span></span>
+          </a>
+
+          <a href="/essays/lorem-ipsum-post" class="blog-card panel">
+            <div class="blog-meta">
+              <span>Sample</span>
+              <span>&middot;</span>
+              <span>AI</span>
+              <span>&middot;</span>
+              <span>7 min read</span>
+            </div>
+            <h2>Forward Deployed: Building AI Inside Real Companies</h2>
+            <p>The demo is the easy part. Notes from sitting next to the people whose work we're automating, and why the handoff matters more than the model.</p>
+            <span class="read-more">Read more <span>&rarr;</span></span>
+          </a>
+        </div>
+      </section>
+
+      <aside class="feed-col" aria-labelledby="feed-heading">
+        <div class="feed-head">
+          <h2 class="section-heading" id="feed-heading"><span class="idx">02</span> Thoughts</h2>
+          <span class="feed-sample" hidden>Sample posts</span>
+        </div>
+        <div class="feed-profile">
+          <img class="feed-avatar" alt="Dallin Christensen" width="44" height="44" hidden>
+          <div>
+            <p class="feed-name">Dallin Christensen</p>
+            <p class="feed-handles"><a href="https://x.com/DallinTC" target="_blank" rel="noopener">@DallinTC</a> &middot; <a href="https://www.linkedin.com/in/dallintchristensen" target="_blank" rel="noopener">LinkedIn</a></p>
           </div>
-          <h2>Lorem Ipsum Dolor Sit Amet</h2>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. This is placeholder text — my first real post is on the way.</p>
-          <span class="read-more">Read more <span>&rarr;</span></span>
-        </a>
-      </div>
-    </section>
+        </div>
+        <div class="feed-filters" role="group" aria-label="Filter posts">
+          <button type="button" class="feed-filter" data-source="all" aria-pressed="true">All</button>
+          <button type="button" class="feed-filter" data-source="x" aria-pressed="false">X</button>
+          <button type="button" class="feed-filter" data-source="linkedin" aria-pressed="false">LinkedIn</button>
+        </div>
+        <ol class="feed-list" id="feed-list">
+          <li class="feed-item">
+            <p>Short-form thoughts live on <a href="https://x.com/DallinTC" target="_blank" rel="noopener">X</a> and <a href="https://www.linkedin.com/in/dallintchristensen" target="_blank" rel="noopener">LinkedIn</a>.</p>
+          </li>
+        </ol>
+        <button type="button" class="btn btn-ghost btn-sm feed-more" hidden>Show more</button>
+      </aside>
+    </div>
   </main>
 
   <footer>
@@ -73,5 +127,6 @@
 
   <script src="/assets/js/starfield.js"></script>
   <script src="/assets/js/nav.js"></script>
+  <script src="/assets/js/feed.js"></script>
 </body>
 </html>

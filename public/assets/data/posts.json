@@ -1,0 +1,302 @@
+{
+  "sample": false,
+  "profiles": {
+    "x": {
+      "label": "X",
+      "handle": "@DallinTC",
+      "url": "https://x.com/DallinTC",
+      "avatar": "/assets/img/feed/avatar.jpg"
+    },
+    "linkedin": {
+      "label": "LinkedIn",
+      "handle": "Dallin Christensen",
+      "url": "https://www.linkedin.com/in/dallintchristensen",
+      "avatar": "/assets/img/feed/avatar.jpg"
+    }
+  },
+  "posts": [
+    {
+      "source": "x",
+      "date": "2026-10-23",
+      "url": "https://x.com/DallinTC/status/2113529415259001266",
+      "text": "Utah company BTW",
+      "quote": {
+        "author": "Paul Graham",
+        "handle": "@paulg",
+        "text": "Established companies will at best adapt to AI. Newly founded startups will be AI-native from the start. This is an interesting example of a company in the middle, which (by great effort) remade itself as an AI-native company.",
+        "inner": "Podium: “We built a $150M ARR business twice. The first time took 8 years. The second took 2.5.”"
+      }
+    },
+    {
+      "source": "x",
+      "date": "2026-10-19",
+      "text": "DELL almost died from outsourcing core parts of their business. I hear students worrying about outsourcing too much of their work to AI all the time. I think the real question is what is your core business?",
+      "url": "https://x.com/DallinTC/status/2112281937075429868"
+    },
+    {
+      "source": "x",
+      "date": "2026-10-19",
+      "text": "Turns out you build product sense by using products, judgement by making decisions, and interpersonal skills by working with people... turns out DOING stuff is a great way to learn",
+      "url": "https://x.com/DallinTC/status/2112274417376235843"
+    },
+    {
+      "source": "x",
+      "date": "2026-10-19",
+      "url": "https://x.com/DallinTC/status/2112282533631332438",
+      "text": "Utah is an incredible place.",
+      "quote": {
+        "author": "Governor Cox",
+        "handle": "@GovCox",
+        "text": "Thank you, Utah. For the fourth year in a row, U.S. News & World Report has named Utah the best state in the nation. And the credit belongs to you."
+      },
+      "image": "/assets/img/feed/x-2112282533631332438.jpg",
+      "alt": "Salt Lake City skyline with the words #1 Best State in America"
+    },
+    {
+      "source": "x",
+      "date": "2026-09-23",
+      "text": "Judgement still matters in 2026. Being high agency still matters. Taste still matters.",
+      "url": "https://x.com/DallinTC/status/2102820003112489427"
+    },
+    {
+      "source": "x",
+      "date": "2026-09-23",
+      "url": "https://x.com/DallinTC/status/2102821415116566545",
+      "text": "The new Horowitz Andreessen Academy has very much the same philosophy of Sandbox. Cool to watch the rest of the market catching onto products I've worked on"
+    },
+    {
+      "source": "x",
+      "date": "2026-09-11",
+      "url": "https://x.com/DallinTC/status/2098548191654465631",
+      "text": "There is one human institution that makes a pauper the equal of a Rockefeller, the stupid man equal of an Einstein, and an ignorant man equal of any college president. That institution, gentlemen, is a court.\nAtticus Finch\n\nGrateful for America today."
+    },
+    {
+      "source": "x",
+      "date": "2026-09-10",
+      "url": "https://x.com/DallinTC/status/2098179799441363223",
+      "text": "Every great idea emerges out of a process of trial-and-error experimentation.\nScott D Anthony\n\nGet started on the process of trial-and-error yesterday!"
+    },
+    {
+      "source": "x",
+      "date": "2026-09-10",
+      "url": "https://x.com/DallinTC/status/2098178819924590871",
+      "text": "You can't find returns in investments you haven't made.\nClayton Christensen\n\nInvest today."
+    },
+    {
+      "source": "x",
+      "date": "2026-09-10",
+      "url": "https://x.com/DallinTC/status/2098177050687529157",
+      "text": "We choose to go to the moon in this decade and do the other things, not because they are easy, but because they are hard, because that goal will serve to organize and measure the best of our energies and skills\nJFK\n\nChoose to go to the moon guys!"
+    },
+    {
+      "source": "x",
+      "date": "2026-09-10",
+      "url": "https://x.com/DallinTC/status/2098174053425262884",
+      "text": "It is not the critic who counts... The credit belongs to the man who is actually in the arena, whose face is marred by dust and sweat and blood; who strives valiantly; who errs... who spends himself in a worthy cause\nTeddy Roosevelt\n\nIf you're not in the arena, the time is now."
+    },
+    {
+      "source": "x",
+      "date": "2026-09-09",
+      "url": "https://x.com/DallinTC/status/2097741366227042354",
+      "text": "Utah is a great place to build a company."
+    },
+    {
+      "source": "linkedin",
+      "date": "2026-07-21",
+      "text": "Excited to share that, after an exciting pilot run last year, BYU will be continuing their mock trial program this year! In BYU’s first year, our A team ended in the top 10% out of more than 700 competing teams, and our B team received a peer nominated award for the highest level of professionalism demonstrated at the regional competition.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7485320530921672704/",
+      "image": "/assets/img/feed/li-7485320530921672704.jpg",
+      "alt": "BYU mock trial team"
+    },
+    {
+      "source": "linkedin",
+      "date": "2026-06-08",
+      "text": "Proud to share that this summer I am joining Innosight in Boston! Innosight is a strategy and innovation consulting firm acquired by Huron in 2017, and founded by the late Clayton Christensen in 2000. Having studied Christensen’s writings, I’ve always admired the thinker and man he was.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7469771846662545408/",
+      "image": "/assets/img/feed/li-7469771846662545408.jpg",
+      "alt": "Joining Innosight in Boston"
+    },
+    {
+      "source": "x",
+      "date": "2026-05-30",
+      "text": "I love Rob Snyder’s take on this with the pull framework. People don’t just buy things they want (because we want many things that we don’t buy). We must want them and they must help us achieve something we have decided to do/ are actively pursuing. Like jobs to be done theory.",
+      "url": "https://x.com/DallinTC/status/2060842463410188676"
+    },
+    {
+      "source": "linkedin",
+      "date": "2026-05-12",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7459995047103553536/",
+      "text": "So proud of the Integritas Mock Trial team I helped coach this year! Integritas had 3 teams make Semi Finals this year in the state season - the second year in a row and the second time in Utah history!\n\nThis team put on an incredible show at National High School Mock Trial Championship. They finished in 9th with the second highest strength of schedule in the whole competition - including defeating two top 5 teams.",
+      "image": "/assets/img/feed/li-7459995047103553536.jpg",
+      "alt": "The Integritas Mock Trial team at nationals"
+    },
+    {
+      "source": "linkedin",
+      "date": "2026-05-12",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7459760599561027584/",
+      "text": "The Brigham Young University Marriott School of Business’s mission to produce Christ-like business leaders creates a unique and wonderful environment to learn. I’ve been so impressed by how discussions of faith in the classroom have forced deeper thinking, additional insights, and better work in my time at BYU."
+    },
+    {
+      "source": "x",
+      "date": "2026-05-04",
+      "text": "Joseph Schumpeter wrote of the \"perennial gale of creative destruction.\" AI has beckoned in the perennial gale. It's create or be destroyed. Time to build everyone.",
+      "url": "https://x.com/DallinTC/status/2051426856008864129"
+    },
+    {
+      "source": "x",
+      "date": "2026-05-04",
+      "text": "Attended @DeepLearningAI's AI Dev Conference in SF last week - loved the emphasis on decreasing error rate for AI as an equally important area of innovation and focus as increasing AI capabilities. Both increase AI commercial usability, but one doesn't get the focus. Opportunity!",
+      "url": "https://x.com/DallinTC/status/2051417537288835360"
+    },
+    {
+      "source": "x",
+      "date": "2026-05-04",
+      "url": "https://x.com/DallinTC/status/2051428252061949994",
+      "text": "Growing up a member of @LDSchurch the idea of agency is something I've studied all my life. It's been fun to watch AI bring the concept to mainstream discussion. I only see agency and judgement becoming more important."
+    },
+    {
+      "source": "x",
+      "date": "2026-05-04",
+      "url": "https://x.com/DallinTC/status/2051420764591792240",
+      "text": "Still mulling over how much I love @Google's 20% rule after touring their campus. Gmail was a 20% project. Innovation is often seen as a startup trait - but even as a fortune 5 company they choose innovation. (20% of employee's time is a huge investment, but it pays dividends!)"
+    },
+    {
+      "source": "x",
+      "date": "2026-04-16",
+      "url": "https://x.com/DallinTC/status/2044919865174335805",
+      "text": "Creation is divine. It’s always a good time to build.\n\nAlso, huge fan of letting our faith be a part of public discussion - it leaves us all better.",
+      "link": {
+        "url": "https://arenamag.com/articles/anxiously-engaged-in-a-good-cause",
+        "site": "arenamag.com",
+        "title": "“Anxiously Engaged in a Good Cause”: Latter-day Saint ethos in American industry and technology"
+      }
+    },
+    {
+      "source": "x",
+      "date": "2026-03-31",
+      "url": "https://x.com/DallinTC/status/2038827515222114557",
+      "text": "Choose.\n\nGenesis 4:7 in East of Eden:\n“Don’t you see?” he cried. “The American Standard translation orders men to triumph over sin, and... the King James translation makes a promise in ‘Thou shalt,’ ... But the Hebrew word, the word timshel—‘Thou mayest’—that gives a choice.”"
+    },
+    {
+      "source": "x",
+      "date": "2026-03-13",
+      "url": "https://x.com/DallinTC/status/2032326602160263506",
+      "text": "I am the master of my fate,\nI am the captain of my soul.\nWilliam Ernest Henley\n\nAnd you are of yours. So get out there and use that agency to make life an incredible journey!"
+    },
+    {
+      "source": "x",
+      "date": "2026-03-11",
+      "url": "https://x.com/DallinTC/status/2031861323177607464",
+      "text": "Act, and don’t just be acted upon.\n\nAI makes high agency people more valuable than ever.\n\n“God, hath created all things… both things to act and things to be acted upon.”\n2 Nephi 2:14"
+    },
+    {
+      "source": "x",
+      "date": "2026-03-10",
+      "url": "https://x.com/DallinTC/status/2031436179653251120",
+      "text": "Humans are creators. We are meant to build.\nHumans are problem solvers. Today's issues are our purpose.\nThere is beauty and meaning to learning from the past, building the future, and improving the present."
+    },
+    {
+      "source": "x",
+      "date": "2026-03-06",
+      "url": "https://x.com/DallinTC/status/2029991974154203338",
+      "text": "We must adapt.\n\n“Every piece of business strategy acquires its true significance only against the background of that process and within the situation created by it. It must be seen in its role in the perennial gale of creative destruction”\nJoseph Schumpeter"
+    },
+    {
+      "source": "x",
+      "date": "2026-02-10",
+      "url": "https://x.com/DallinTC/status/2021279906492273109",
+      "text": "Be rolling waters.\n\nHow long can rolling waters remain impure? (D&C 121:33)\n\nThis is a scriptural reference to purity, but I think the principle bears out everywhere. Act, and things will get figured out. Be biased for action. Be rolling waters."
+    },
+    {
+      "source": "x",
+      "date": "2025-12-22",
+      "url": "https://x.com/DallinTC/status/2003175594381770925",
+      "text": "@thogge nailed it talking about conviction. It's a scarce resource. It's valuable too. Luckily, you and I can build it through the same activities we need to go through to live meaningful lives anyway.",
+      "link": {
+        "url": "https://tylerhogge.com/2025/12/11/a-few-thoughts-on-conviction/",
+        "site": "tylerhogge.com",
+        "title": "A few thoughts on conviction"
+      }
+    },
+    {
+      "source": "linkedin",
+      "date": "2025-11-25",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7399192638664650752/",
+      "text": "Proud of my team’s 3rd place win at the Leland x Ballard Center for Social Impact | BYU Marriott case competition last week! We were tasked with connecting Leland’s professional coaching services with underserved populations to move the needle on social mobility - a complicated social impact question.",
+      "image": "/assets/img/feed/li-7399192638664650752.jpg",
+      "alt": "Case competition team on stage"
+    },
+    {
+      "source": "linkedin",
+      "date": "2025-10-27",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7388627047994224640/",
+      "text": "I live for moments like this one: sharing a coaching epiphany with a mock trial student from the jury box.\n\nThe high school teams I help coach set a state record by being the first group of three teams from one program to make semifinals. Now it’s BYU Mock Trial’s turn. We’re in the thick of scrimmaging and re-writing, and getting excited for our first competition!",
+      "image": "/assets/img/feed/li-7388627047994224640.jpg",
+      "alt": "Coaching a mock trial student from the jury box"
+    },
+    {
+      "source": "linkedin",
+      "date": "2025-10-21",
+      "text": "We did it! On Saturday, my team won the Brigham Young University Marriott School of Business case competition. Loved working with Josh Christensen, Luke Stacey, Caleb Haymore, and Peter Hyde to answer three strategic questions for Adminify AI.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7386534769163108352/",
+      "image": "/assets/img/feed/li-7386534769163108352.jpg",
+      "alt": "BYU Marriott case competition winners"
+    },
+    {
+      "source": "linkedin",
+      "date": "2025-10-09",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7382141871696982017/",
+      "text": "To everyone who competed in the Hire Bloom x Ballard Center for Social Impact | BYU Marriott x Peery Initiative Case Competition my team and I put on in March, check this out! The case prompt was to recommend an in-person workplace solution for Bloom's international employees in the Africa region.\n\nFast forward a few months and Bloom just opened an office in Kenya. Incredible.",
+      "image": "/assets/img/feed/li-7382141871696982017.jpg",
+      "alt": "Bloom's new office in Kenya"
+    },
+    {
+      "source": "linkedin",
+      "date": "2025-07-22",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7353463921581715456/",
+      "text": "I’m excited to share that I’ve been accepted into the BYU Strategy program. The curriculum, using case studies, is modeled after Harvard Business School’s. My study of data analytics will include training in web scraping and data visualization. I will develop insights and present them in pitch decks.",
+      "image": "/assets/img/feed/li-7353463921581715456.jpg",
+      "alt": "BYU Strategy program acceptance"
+    },
+    {
+      "source": "linkedin",
+      "date": "2025-07-07",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7348098515144724480/",
+      "text": "Anduril - meaning the flame of the West - is Palmer Luckey’s latest multi billion dollar company. Homeschooled. Built Oculus in a camper at 19. Now he’s creating a real-life Stark Industries to defend the West.\n\nWhatever your take on Luckey is, it’s that scrappy, inventive spirit he embodies that we need more of in this country. Be a builder! Get scrappy for things that matter!",
+      "image": "/assets/img/feed/li-7348098515144724480.jpg",
+      "alt": "Palmer Luckey, American Vulcan (Tablet Magazine)"
+    },
+    {
+      "source": "linkedin",
+      "date": "2025-07-05",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7347385628638048256/",
+      "text": "6 countries and nearly 30 business visits in 1 month - BYU’s Asia Business Study Abroad was an incredible experience! I was grateful to learn about international business strategy, economics, and the beautiful people and cultures of Japan, Mongolia, Hong Kong, Taiwan, Vietnam and Thailand.",
+      "image": "/assets/img/feed/li-7347385628638048256.jpg",
+      "alt": "BYU Asia Business Study Abroad group"
+    },
+    {
+      "source": "linkedin",
+      "date": "2025-01-29",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7290231706366709760/",
+      "text": "I believe that persuasion and advocacy are not just courtroom tools, but the solution to many of our problems. The best outcomes in our personal lives and the societal healing we seek are not the result of avoiding conflict, but the product of good advocacy and real conversations between people.",
+      "image": "/assets/img/feed/li-7290231706366709760.jpg",
+      "alt": "BYU Law School's Woody Deem trial advocacy competition"
+    },
+    {
+      "source": "linkedin",
+      "date": "2025-01-09",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7283176298984718336/",
+      "text": "This semester I’m interning as a Project Manager with Creamies Premium Ice Cream! I’m excited for the opportunity to try my hand at project management and work with a company whose product I’ve enjoyed all my life!",
+      "image": "/assets/img/feed/li-7283176298984718336.jpg",
+      "alt": "Creamies Premium Ice Cream"
+    },
+    {
+      "source": "linkedin",
+      "date": "2024-10-16",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7252422603561132032/",
+      "text": "Hey BYU friends! I’m part of the team organizing this case competition - try your hand at a real business situation with Swig (all majors welcome), apply what you’re learning in the classroom and compete for big cash prizes!",
+      "image": "/assets/img/feed/li-7252422603561132032.jpg",
+      "alt": "Swig case competition announcement"
+    }
+  ]
+}

@@ -53,6 +53,13 @@ Still to do:
 
 - [ ] Portfolio: replace the "Your next project goes here" placeholder card with real projects
 - [ ] Portfolio: rewrite the generic "Interactive Learning Platform" project description
-- [ ] Essays: replace `lorem-ipsum-post.html` with real essays (or hide Essays until there's one)
+- [ ] Essays: replace the 3 sample cards and `lorem-ipsum-post.html` with real essays
+
+## 5. Essays page "Thoughts" feed (mockup built)
+
+The right column renders `public/assets/data/posts.json` (sample posts for now, flagged `"sample": true`).
+- [x] Curated 39 real posts (X + LinkedIn) with profile photo, post images, quoted posts, and link previews into `posts.json`
+- [ ] Refresh `posts.json` by hand when there are new posts worth featuring
+- [ ] Decide whether to automate later: X needs a paid API plan; LinkedIn doesn't let personal accounts pull their own posts through its API
 - [ ] Remove the unused `.scroll-hint` CSS now that the homepage scroll hint is gone
 - [ ] Update DESIGN.md with any new visual rules from the storyline, dashboard, and chatbot
